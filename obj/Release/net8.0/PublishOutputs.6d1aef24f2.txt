@@ -1,0 +1,11 @@
+C:\Users\useu\Desktop\Brus\Es force sim\bin\Release\net8.0\publish\Es force sim.exe
+C:\Users\useu\Desktop\Brus\Es force sim\bin\Release\net8.0\publish\Es force sim.dll
+C:\Users\useu\Desktop\Brus\Es force sim\bin\Release\net8.0\publish\Es force sim.deps.json
+C:\Users\useu\Desktop\Brus\Es force sim\bin\Release\net8.0\publish\Es force sim.runtimeconfig.json
+C:\Users\useu\Desktop\Brus\Es force sim\bin\Release\net8.0\publish\Es force sim.pdb
+C:\Users\useu\Desktop\Brus\Es force sim\bin\Release\net8.0\publish\Raylib-cs.dll
+C:\Users\useu\Desktop\Brus\Es force sim\bin\Release\net8.0\publish\runtimes\linux-x64\native\libraylib.so
+C:\Users\useu\Desktop\Brus\Es force sim\bin\Release\net8.0\publish\runtimes\osx-arm64\native\libraylib.dylib
+C:\Users\useu\Desktop\Brus\Es force sim\bin\Release\net8.0\publish\runtimes\osx-x64\native\libraylib.dylib
+C:\Users\useu\Desktop\Brus\Es force sim\bin\Release\net8.0\publish\runtimes\win-x64\native\raylib.dll
+C:\Users\useu\Desktop\Brus\Es force sim\bin\Release\net8.0\publish\runtimes\win-x86\native\raylib.dll

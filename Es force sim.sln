@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Es force sim", "Es force sim.csproj", "{0AD58182-B46B-4442-A2DA-AB983D6C749F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0AD58182-B46B-4442-A2DA-AB983D6C749F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AD58182-B46B-4442-A2DA-AB983D6C749F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AD58182-B46B-4442-A2DA-AB983D6C749F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AD58182-B46B-4442-A2DA-AB983D6C749F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {63CCAD30-0EE6-4CBF-87E5-756D46190C2D}
+	EndGlobalSection
+EndGlobal

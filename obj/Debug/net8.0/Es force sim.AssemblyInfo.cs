@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Es force sim")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d399d13d50d0be5da9a9083e5a61b0f73dcaa8f3")]
 [assembly: System.Reflection.AssemblyProductAttribute("Es force sim")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Es force sim")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -258,6 +258,8 @@ partial class Program
     public static void Main()
     {
         Raylib.SetTargetFPS(60);
+        Image image = Raylib.LoadImage("./assets/icon.png");
+        Raylib.SetWindowIcon(image);
         Raylib.SetConfigFlags(ConfigFlags.Msaa4xHint);
         Raylib.SetConfigFlags(ConfigFlags.ResizableWindow);
         Raylib.SetConfigFlags(ConfigFlags.MaximizedWindow);

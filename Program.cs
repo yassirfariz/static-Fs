@@ -285,10 +285,9 @@ partial class Program
             }
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.Black);
-            
             Raylib.SetMouseCursor(MouseCursor.Crosshair);
             EsField pfield = new((x,y)=>{return p.charge*(x-p.pos.X)/MathF.Pow(MathF.Sqrt((x-p.pos.X)*(x-p.pos.X)+(y-p.pos.Y)*(y-p.pos.Y)),3);},
-                (x,y)=>{return p.charge*(y-p.pos.Y)/MathF.Pow(MathF.Sqrt((x-p.pos.X)*(x-p.pos.X)+(y-p.pos.Y)*(y-p.pos.Y)),3);},[0,Raylib.GetScreenWidth()],[0,Raylib.GetScreenHeight()],35);
+                (x,y)=>{return p.charge*(y-p.pos.Y)/MathF.Pow(MathF.Sqrt((x-p.pos.X)*(x-p.pos.X)+(y-p.pos.Y)*(y-p.pos.Y)),3);},[0,Raylib.GetScreenWidth()],[0,Raylib.GetScreenHeight()],50);
             EsField efield = new((x,y)=>{return e.charge*(x-e.pos.X)/MathF.Pow(MathF.Sqrt((x-e.pos.X)*(x-e.pos.X)+(y-e.pos.Y)*(y-e.pos.Y)),3);},
                 (x,y)=>{return e.charge*(y-e.pos.Y)/MathF.Pow(MathF.Sqrt((x-e.pos.X)*(x-e.pos.X)+(y-e.pos.Y)*(y-e.pos.Y)),3);},[0,1920],[0,1080],25);
             EsField e2field = new((x,y)=>{return e2.charge*(x-e2.pos.X)/MathF.Pow(MathF.Sqrt((x-e2.pos.X)*(x-e2.pos.X)+(y-e2.pos.Y)*(y-e2.pos.Y)),3);},

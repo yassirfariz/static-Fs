@@ -46,7 +46,7 @@ public class Particle{
         this.vel = vel;
         this.acc = acc;
         this.charge = charge;
-        this.vec_mode = "velocity";
+            this.vec_mode = "velocity";
         positions = [pos];
     }
     public void Draw(bool active)
@@ -193,8 +193,53 @@ class Controller{
         }
     }
 }
+class Graph{
+    Particle p;
+    List<Vector2> vals;
+    public Graph(Particle particle){
+        p = particle;
+        vals = [];
+    }
+    private void Arrow(Vector2 posA,Vector2 posB,Color pcolor){
+        float angle = MathF.Atan2(posB.Y-posA.Y,posB.X-posA.X);
+        Raylib.DrawLineEx(posA,posB,2.5f,pcolor);
+        Raylib.DrawLineEx(posB,posB+8*new Vector2(-MathF.Cos(angle+(float)Math.PI/4),-MathF.Sin(angle+(float)Math.PI/4)),2F,pcolor);
+        Raylib.DrawLineEx(posB,posB+8*new Vector2(-MathF.Cos(angle-(float)Math.PI/4),-MathF.Sin(angle-(float)Math.PI/4)),2F,pcolor);
+    }
+    public void Draw_UI(bool active){
+        Raylib.DrawRectangleRounded(
+                new Rectangle(5,Raylib.GetScreenHeight()-205,450,200),
+                    0.25f,100,Raylib.ColorFromNormalized(new (0f,0f,0f,0.65f))
+        );
+        Raylib.DrawText($"f(t)=t*{p.vec_mode}",55,Raylib.GetScreenHeight()-190,24,Color.Gold);
+        Arrow(new Vector2(25,Raylib.GetScreenHeight()-15),new Vector2(425,Raylib.GetScreenHeight()-15),Color.White);
+        Arrow(new Vector2(25,Raylib.GetScreenHeight()-15),new Vector2(25,Raylib.GetScreenHeight()-175),Color.White);
+        if (active) vals.Add(new Vector2(Math.Clamp(p.vel.Length(),0,27.5f),Math.Clamp(p.acc.Length(),0,27.5f)));
+        if (active && vals.Count > 350) {
+            vals.Remove(vals.First());
+        }
+        if (vals.Count>1){    
+            if (p.vec_mode == "velocity"){
+                for (int i=1;i< vals.Count; i++){    
+                    Raylib.DrawLineEx(
+                        new Vector2(50+i-1.01f,Raylib.GetScreenHeight()-15-5*vals[i-1].X),
+                        new Vector2(50+i,Raylib.GetScreenHeight()-15-5*vals[i].X),3f,Color.White); 
+                }
+            }
+            else{
+                for (int i=1;i< vals.Count; i++){
+                    Raylib.DrawLineEx(
+                    new Vector2(50+i-1.01f,Raylib.GetScreenHeight()-15-15*vals[i-1].Y),
+                    new Vector2(50+i,Raylib.GetScreenHeight()-15-15*vals[i].Y),3f,Color.White); 
+                }
+            }
+        }
+
+    }
+}
 partial class HelpMenu{
     private bool show ;
+    private bool gshow;
     private Texture2D up  ;
     private Texture2D down ;
     private Texture2D space ;
@@ -202,13 +247,16 @@ partial class HelpMenu{
     private Texture2D Rmouse ;
     private Texture2D shift  ;
     private int currentId;
+    public Graph[] graphs;
     private Particle[] particles;
     private Controller ctr;
-    public HelpMenu(Controller ctr){
+    public HelpMenu(Controller ctr,Graph[] graphs){
         this.ctr = ctr;
+        this.graphs = graphs;
         currentId = ctr.getCurrentID();
         particles = ctr.getSystem();
         show = false;
+        gshow = false;
         up = Raylib.LoadTexture("./assets/Up.png");
         down = Raylib.LoadTexture("./assets/Down.png");
         space = Raylib.LoadTexture("./assets/Space.png");
@@ -219,7 +267,10 @@ partial class HelpMenu{
     public void Toggle(){
         show = !show;
     }
-    public void Draw(){
+    public void ToggleG(){
+        gshow = !gshow;
+    }
+    public void Draw(bool active){
         currentId = ctr.getCurrentID();
         if (show){      
             Raylib.DrawRectangleRounded(
@@ -250,6 +301,9 @@ partial class HelpMenu{
             Raylib.DrawTexture(shift,Raylib.GetScreenWidth()-100,-15,Color.White);
             Raylib.DrawText("Help", Raylib.GetScreenWidth()-80, 65, 28, Color.White);
             Raylib.DrawFPS(30, 120);
+            if (gshow){
+                graphs[currentId].Draw_UI(active);
+            }
         }
     }
 }
@@ -257,7 +311,7 @@ partial class Program
 {
     public static void Main()
     {
-        Raylib.SetTargetFPS(60);
+        // Raylib.SetTargetFPS(60); 
         Image image = Raylib.LoadImage("./assets/icon.png");
         Raylib.SetWindowIcon(image);
         Raylib.SetConfigFlags(ConfigFlags.Msaa4xHint);
@@ -268,7 +322,10 @@ partial class Program
         Particle e = new(new Vector2(260,340),new Vector2(0,0),new Vector2(0,2.5f),-12);
         Particle e2 = new(new Vector2(740,340),new Vector2(0,0),new Vector2(0,-2.5f),-12);
         Controller ctr = new([p,e,e2]);
-        HelpMenu menu = new(ctr);
+        Graph gp = new(p);
+        Graph ge1 = new(e);
+        Graph ge2 = new(e2);
+        HelpMenu menu = new(ctr,[gp,ge1,ge2]);
         
         bool active=false;
         while (!Raylib.WindowShouldClose())
@@ -280,25 +337,26 @@ partial class Program
             if (Raylib.IsKeyPressed(KeyboardKey.LeftShift)){
                 menu.Toggle();
             }
+            if (Raylib.IsKeyPressed(KeyboardKey.G)){
+                menu.ToggleG();
+            }
             if (Raylib.IsKeyPressed(KeyboardKey.F11)){
                 Raylib.TakeScreenshot("./img.png");
             }
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.Black);
             Raylib.SetMouseCursor(MouseCursor.Crosshair);
-            EsField pfield = new((x,y)=>{return p.charge*(x-p.pos.X)/MathF.Pow(MathF.Sqrt((x-p.pos.X)*(x-p.pos.X)+(y-p.pos.Y)*(y-p.pos.Y)),3);},
-                (x,y)=>{return p.charge*(y-p.pos.Y)/MathF.Pow(MathF.Sqrt((x-p.pos.X)*(x-p.pos.X)+(y-p.pos.Y)*(y-p.pos.Y)),3);},[0,Raylib.GetScreenWidth()],[0,Raylib.GetScreenHeight()],50);
-            EsField efield = new((x,y)=>{return e.charge*(x-e.pos.X)/MathF.Pow(MathF.Sqrt((x-e.pos.X)*(x-e.pos.X)+(y-e.pos.Y)*(y-e.pos.Y)),3);},
-                (x,y)=>{return e.charge*(y-e.pos.Y)/MathF.Pow(MathF.Sqrt((x-e.pos.X)*(x-e.pos.X)+(y-e.pos.Y)*(y-e.pos.Y)),3);},[0,1920],[0,1080],25);
-            EsField e2field = new((x,y)=>{return e2.charge*(x-e2.pos.X)/MathF.Pow(MathF.Sqrt((x-e2.pos.X)*(x-e2.pos.X)+(y-e2.pos.Y)*(y-e2.pos.Y)),3);},
-                (x,y)=>{return e2.charge*(y-e2.pos.Y)/MathF.Pow(MathF.Sqrt((x-e2.pos.X)*(x-e2.pos.X)+(y-e2.pos.Y)*(y-e2.pos.Y)),3);},[0,1920],[0,1080],25);
-            EsField Rf = pfield.LinearCombine(e2field).LinearCombine(efield);
-            Rf.draw(new Color(215,55,255,240));
+            EsField esField = new(
+                (x,y)=>{return p.charge*(x-p.pos.X)/MathF.Pow(MathF.Sqrt((x-p.pos.X)*(x-p.pos.X)+(y-p.pos.Y)*(y-p.pos.Y)),3)+e.charge*(x-e.pos.X)/MathF.Pow(MathF.Sqrt((x-e.pos.X)*(x-e.pos.X)+(y-e.pos.Y)*(y-e.pos.Y)),3)+e2.charge*(x-e2.pos.X)/MathF.Pow(MathF.Sqrt((x-e2.pos.X)*(x-e2.pos.X)+(y-e2.pos.Y)*(y-e2.pos.Y)),3);},
+                (x,y)=>{return p.charge*(y-p.pos.Y)/MathF.Pow(MathF.Sqrt((x-p.pos.X)*(x-p.pos.X)+(y-p.pos.Y)*(y-p.pos.Y)),3)+e2.charge*(y-e2.pos.Y)/MathF.Pow(MathF.Sqrt((x-e2.pos.X)*(x-e2.pos.X)+(y-e2.pos.Y)*(y-e2.pos.Y)),3)+e.charge*(y-e.pos.Y)/MathF.Pow(MathF.Sqrt((x-e.pos.X)*(x-e.pos.X)+(y-e.pos.Y)*(y-e.pos.Y)),3);},
+                [50,Raylib.GetScreenWidth()],[50,Raylib.GetScreenHeight()],50);
+           
+            esField.draw(new Color(215,55,255,240));
             ctr.Control();
             p.Draw(active);
             e.Draw(active);
             e2.Draw(active);
-            menu.Draw();
+            menu.Draw(active);
             if(active){ 
                 p.Update(dt,[e,e2]);e.Update(dt,[p,e2]);e2.Update(dt,[p,e]);
             }

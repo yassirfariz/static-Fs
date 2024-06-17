@@ -195,16 +195,20 @@ class Controller{
 }
 class Graph{
     Particle p;
-    List<Vector2> vals;
+    List<float> val_vels;
+    List<float> val_accs;
+
+
     public Graph(Particle particle){
         p = particle;
-        vals = [];
+        val_accs = [];
+        val_vels = [];
     }
     private void Arrow(Vector2 posA,Vector2 posB,Color pcolor){
         float angle = MathF.Atan2(posB.Y-posA.Y,posB.X-posA.X);
-        Raylib.DrawLineEx(posA,posB,2.5f,pcolor);
-        Raylib.DrawLineEx(posB,posB+8*new Vector2(-MathF.Cos(angle+(float)Math.PI/4),-MathF.Sin(angle+(float)Math.PI/4)),2F,pcolor);
-        Raylib.DrawLineEx(posB,posB+8*new Vector2(-MathF.Cos(angle-(float)Math.PI/4),-MathF.Sin(angle-(float)Math.PI/4)),2F,pcolor);
+        Raylib.DrawLineEx(posA,posB,2.75f,pcolor);
+        Raylib.DrawLineEx(posB,posB+8*new Vector2(-MathF.Cos(angle+(float)Math.PI/4),-MathF.Sin(angle+(float)Math.PI/4)),2.2F,pcolor);
+        Raylib.DrawLineEx(posB,posB+8*new Vector2(-MathF.Cos(angle-(float)Math.PI/4),-MathF.Sin(angle-(float)Math.PI/4)),2.2F,pcolor);
     }
     public void Draw_UI(bool active){
         Raylib.DrawRectangleRounded(
@@ -214,26 +218,38 @@ class Graph{
         Raylib.DrawText($"f(t)=t*{p.vec_mode}",55,Raylib.GetScreenHeight()-190,24,Color.Gold);
         Arrow(new Vector2(25,Raylib.GetScreenHeight()-15),new Vector2(425,Raylib.GetScreenHeight()-15),Color.White);
         Arrow(new Vector2(25,Raylib.GetScreenHeight()-15),new Vector2(25,Raylib.GetScreenHeight()-175),Color.White);
-        if (active) vals.Add(new Vector2(Math.Clamp(p.vel.Length(),0,27.5f),Math.Clamp(p.acc.Length(),0,27.5f)));
-        if (active && vals.Count > 350) {
-            vals.Remove(vals.First());
+        if (active) {
+            val_vels.Add(p.vel.Length());
+            val_accs.Add(p.acc.Length());
         }
-        if (vals.Count>1){    
+        if (active && val_vels.Count > 415) {
+            val_vels.Remove(val_vels.First());
+        }
+        if (active && val_accs.Count > 415) {
+            val_accs.Remove(val_accs.First());
+        }
+        if (val_accs.Count>1 || val_vels.Count>1){    
             if (p.vec_mode == "velocity"){
-                for (int i=1;i< vals.Count; i++){    
+                float factor = val_vels.Max(); 
+                for (int i=1;i< val_vels.Count; i++){    
                     Raylib.DrawLineEx(
-                        new Vector2(50+i-1.01f,Raylib.GetScreenHeight()-15-5*vals[i-1].X),
-                        new Vector2(50+i,Raylib.GetScreenHeight()-15-5*vals[i].X),3f,Color.White); 
+                        new Vector2(25+i-1.15f,Raylib.GetScreenHeight()-15-150/factor*val_vels[i-1]),
+                        new Vector2(25+i,Raylib.GetScreenHeight()-15-150/factor*val_vels[i]),3f,Color.White); 
                 }
             }
             else{
-                for (int i=1;i< vals.Count; i++){
+                float factor = val_accs.Max();
+                for (int i=1;i< val_accs.Count; i++){
                     Raylib.DrawLineEx(
-                    new Vector2(50+i-1.01f,Raylib.GetScreenHeight()-15-15*vals[i-1].Y),
-                    new Vector2(50+i,Raylib.GetScreenHeight()-15-15*vals[i].Y),3f,Color.White); 
+                    new Vector2(25+i-1.15f,Raylib.GetScreenHeight()-15-150/factor*val_accs[i-1]),
+                    new Vector2(25+i,Raylib.GetScreenHeight()-15-150/factor*val_accs[i]),3f,Color.White); 
                 }
             }
         }
+
+    }
+    public void ExportData(string file){
+
 
     }
 }
@@ -349,7 +365,7 @@ partial class Program
             EsField esField = new(
                 (x,y)=>{return p.charge*(x-p.pos.X)/MathF.Pow(MathF.Sqrt((x-p.pos.X)*(x-p.pos.X)+(y-p.pos.Y)*(y-p.pos.Y)),3)+e.charge*(x-e.pos.X)/MathF.Pow(MathF.Sqrt((x-e.pos.X)*(x-e.pos.X)+(y-e.pos.Y)*(y-e.pos.Y)),3)+e2.charge*(x-e2.pos.X)/MathF.Pow(MathF.Sqrt((x-e2.pos.X)*(x-e2.pos.X)+(y-e2.pos.Y)*(y-e2.pos.Y)),3);},
                 (x,y)=>{return p.charge*(y-p.pos.Y)/MathF.Pow(MathF.Sqrt((x-p.pos.X)*(x-p.pos.X)+(y-p.pos.Y)*(y-p.pos.Y)),3)+e2.charge*(y-e2.pos.Y)/MathF.Pow(MathF.Sqrt((x-e2.pos.X)*(x-e2.pos.X)+(y-e2.pos.Y)*(y-e2.pos.Y)),3)+e.charge*(y-e.pos.Y)/MathF.Pow(MathF.Sqrt((x-e.pos.X)*(x-e.pos.X)+(y-e.pos.Y)*(y-e.pos.Y)),3);},
-                [50,Raylib.GetScreenWidth()],[50,Raylib.GetScreenHeight()],50);
+                [15,Raylib.GetScreenWidth()],[15,Raylib.GetScreenHeight()],50);
            
             esField.draw(new Color(215,55,255,240));
             ctr.Control();

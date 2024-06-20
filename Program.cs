@@ -197,12 +197,14 @@ class Graph{
     Particle p;
     List<float> val_vels;
     List<float> val_accs;
-
-
+    int index;
+    List<string> cache;
     public Graph(Particle particle){
         p = particle;
         val_accs = [];
         val_vels = [];
+        cache = [];
+        index = 0;
     }
     private void Arrow(Vector2 posA,Vector2 posB,Color pcolor){
         float angle = MathF.Atan2(posB.Y-posA.Y,posB.X-posA.X);
@@ -219,8 +221,12 @@ class Graph{
         Arrow(new Vector2(25,Raylib.GetScreenHeight()-15),new Vector2(425,Raylib.GetScreenHeight()-15),Color.White);
         Arrow(new Vector2(25,Raylib.GetScreenHeight()-15),new Vector2(25,Raylib.GetScreenHeight()-175),Color.White);
         if (active) {
-            val_vels.Add(p.vel.Length());
-            val_accs.Add(p.acc.Length());
+            float vl = p.vel.Length();
+            float ac = p.acc.Length();
+            val_vels.Add(vl);
+            val_accs.Add(ac);
+            cache.Add($"{index}:{vl},{ac}");
+            index++;
         }
         if (active && val_vels.Count > 415) {
             val_vels.Remove(val_vels.First());
@@ -230,7 +236,7 @@ class Graph{
         }
         if (val_accs.Count>1 || val_vels.Count>1){    
             if (p.vec_mode == "velocity"){
-                float factor = val_vels.Max(); 
+                float factor = val_vels.Max()+0.25f; 
                 for (int i=1;i< val_vels.Count; i++){    
                     Raylib.DrawLineEx(
                         new Vector2(25+i-1.15f,Raylib.GetScreenHeight()-15-150/factor*val_vels[i-1]),
@@ -238,7 +244,7 @@ class Graph{
                 }
             }
             else{
-                float factor = val_accs.Max();
+                float factor = val_accs.Max()+0.25f;
                 for (int i=1;i< val_accs.Count; i++){
                     Raylib.DrawLineEx(
                     new Vector2(25+i-1.15f,Raylib.GetScreenHeight()-15-150/factor*val_accs[i-1]),
@@ -248,9 +254,8 @@ class Graph{
         }
 
     }
-    public void ExportData(string file){
-
-
+    public void ExportData(string fileOutput){
+        File.AppendAllLines(fileOutput,cache);
     }
 }
 partial class HelpMenu{
@@ -358,6 +363,12 @@ partial class Program
             }
             if (Raylib.IsKeyPressed(KeyboardKey.F11)){
                 Raylib.TakeScreenshot("./img.png");
+            }
+            if (Raylib.IsKeyPressed(KeyboardKey.S)){
+                active = false;
+                gp.ExportData("proton.txt");
+                ge1.ExportData("electron1.txt");
+                ge2.ExportData("electron2.txt");
             }
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.Black);

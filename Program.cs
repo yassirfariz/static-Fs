@@ -6,8 +6,8 @@ public class EsField{
     Func<float,float,float> fy;
     int[] Xrange;
     int[] Yrange;
-    float density;
-    public EsField(Func<float,float,float> fx,Func<float,float,float> fy,int[] Xrange,int[] Yrange,float density){
+    int density;
+    public EsField(Func<float,float,float> fx,Func<float,float,float> fy,int[] Xrange,int[] Yrange,int density){
         this.fx = fx;
         this.fy = fy;
         this.Xrange = Xrange;
@@ -15,8 +15,8 @@ public class EsField{
         this.density = density;
     }
     public void draw(Color color){
-        for(float i=Xrange[0];i<Xrange[1];i+=density){
-            for (float j= Yrange[0];j<Yrange[1];j+=density){
+        for (int i=Xrange[0];i<Xrange[1];i+=density){
+            for(int j= Yrange[0];j<Yrange[1];j+=density){
                 Vector2 pos = new(i,j);
                 Arrow(pos,pos+25*Vector2.Normalize(new Vector2(fx(i,j),fy(i,j))),color);   
             }
@@ -198,6 +198,7 @@ class Graph{
     List<float> val_vels;
     List<float> val_accs;
     int index;
+    float factor;
     List<string> cache;
     public Graph(Particle particle){
         p = particle;
@@ -205,6 +206,7 @@ class Graph{
         val_vels = [];
         cache = [];
         index = 0;
+        factor = 1;
     }
     private void Arrow(Vector2 posA,Vector2 posB,Color pcolor){
         float angle = MathF.Atan2(posB.Y-posA.Y,posB.X-posA.X);
@@ -212,7 +214,21 @@ class Graph{
         Raylib.DrawLineEx(posB,posB+8*new Vector2(-MathF.Cos(angle+(float)Math.PI/4),-MathF.Sin(angle+(float)Math.PI/4)),2.2F,pcolor);
         Raylib.DrawLineEx(posB,posB+8*new Vector2(-MathF.Cos(angle-(float)Math.PI/4),-MathF.Sin(angle-(float)Math.PI/4)),2.2F,pcolor);
     }
-    public void Draw_UI(bool active){
+    public void Update(){
+        float vl = p.vel.Length();
+        float ac = p.acc.Length();
+        val_vels.Add(vl);
+        val_accs.Add(ac);
+        cache.Add($"{index}:{vl},{ac}");
+        index++;
+        if (val_vels.Count > 415) {
+            val_vels.Remove(val_vels.First());
+        }
+        if (val_accs.Count > 415) {
+            val_accs.Remove(val_accs.First());
+        }
+    }
+    public void Draw_UI(){
         Raylib.DrawRectangleRounded(
                 new Rectangle(5,Raylib.GetScreenHeight()-205,450,200),
                     0.25f,100,Raylib.ColorFromNormalized(new (0f,0f,0f,0.65f))
@@ -220,23 +236,9 @@ class Graph{
         Raylib.DrawText($"f(t)=t*{p.vec_mode}",55,Raylib.GetScreenHeight()-190,24,Color.Gold);
         Arrow(new Vector2(25,Raylib.GetScreenHeight()-15),new Vector2(425,Raylib.GetScreenHeight()-15),Color.White);
         Arrow(new Vector2(25,Raylib.GetScreenHeight()-15),new Vector2(25,Raylib.GetScreenHeight()-175),Color.White);
-        if (active) {
-            float vl = p.vel.Length();
-            float ac = p.acc.Length();
-            val_vels.Add(vl);
-            val_accs.Add(ac);
-            cache.Add($"{index}:{vl},{ac}");
-            index++;
-        }
-        if (active && val_vels.Count > 415) {
-            val_vels.Remove(val_vels.First());
-        }
-        if (active && val_accs.Count > 415) {
-            val_accs.Remove(val_accs.First());
-        }
         if (val_accs.Count>1 || val_vels.Count>1){    
             if (p.vec_mode == "velocity"){
-                float factor = val_vels.Max()+0.25f; 
+                factor = val_vels.Max()+0.25f; 
                 for (int i=1;i< val_vels.Count; i++){    
                     Raylib.DrawLineEx(
                         new Vector2(25+i-1.15f,Raylib.GetScreenHeight()-15-150/factor*val_vels[i-1]),
@@ -244,7 +246,7 @@ class Graph{
                 }
             }
             else{
-                float factor = val_accs.Max()+0.25f;
+                factor = val_accs.Max()+0.25f;
                 for (int i=1;i< val_accs.Count; i++){
                     Raylib.DrawLineEx(
                     new Vector2(25+i-1.15f,Raylib.GetScreenHeight()-15-150/factor*val_accs[i-1]),
@@ -323,7 +325,7 @@ partial class HelpMenu{
             Raylib.DrawText("Help", Raylib.GetScreenWidth()-80, 65, 28, Color.White);
             Raylib.DrawFPS(30, 120);
             if (gshow){
-                graphs[currentId].Draw_UI(active);
+                graphs[currentId].Draw_UI();
             }
         }
     }
@@ -333,8 +335,6 @@ partial class Program
     public static void Main()
     {
         // Raylib.SetTargetFPS(60); 
-        Image image = Raylib.LoadImage("./assets/icon.png");
-        Raylib.SetWindowIcon(image);
         Raylib.SetConfigFlags(ConfigFlags.Msaa4xHint);
         Raylib.SetConfigFlags(ConfigFlags.ResizableWindow);
         Raylib.SetConfigFlags(ConfigFlags.MaximizedWindow);
@@ -347,7 +347,6 @@ partial class Program
         Graph ge1 = new(e);
         Graph ge2 = new(e2);
         HelpMenu menu = new(ctr,[gp,ge1,ge2]);
-        
         bool active=false;
         while (!Raylib.WindowShouldClose())
         {
@@ -377,7 +376,6 @@ partial class Program
                 (x,y)=>{return p.charge*(x-p.pos.X)/MathF.Pow(MathF.Sqrt((x-p.pos.X)*(x-p.pos.X)+(y-p.pos.Y)*(y-p.pos.Y)),3)+e.charge*(x-e.pos.X)/MathF.Pow(MathF.Sqrt((x-e.pos.X)*(x-e.pos.X)+(y-e.pos.Y)*(y-e.pos.Y)),3)+e2.charge*(x-e2.pos.X)/MathF.Pow(MathF.Sqrt((x-e2.pos.X)*(x-e2.pos.X)+(y-e2.pos.Y)*(y-e2.pos.Y)),3);},
                 (x,y)=>{return p.charge*(y-p.pos.Y)/MathF.Pow(MathF.Sqrt((x-p.pos.X)*(x-p.pos.X)+(y-p.pos.Y)*(y-p.pos.Y)),3)+e2.charge*(y-e2.pos.Y)/MathF.Pow(MathF.Sqrt((x-e2.pos.X)*(x-e2.pos.X)+(y-e2.pos.Y)*(y-e2.pos.Y)),3)+e.charge*(y-e.pos.Y)/MathF.Pow(MathF.Sqrt((x-e.pos.X)*(x-e.pos.X)+(y-e.pos.Y)*(y-e.pos.Y)),3);},
                 [15,Raylib.GetScreenWidth()],[15,Raylib.GetScreenHeight()],50);
-           
             esField.draw(new Color(215,55,255,240));
             ctr.Control();
             p.Draw(active);
@@ -385,7 +383,7 @@ partial class Program
             e2.Draw(active);
             menu.Draw(active);
             if(active){ 
-                p.Update(dt,[e,e2]);e.Update(dt,[p,e2]);e2.Update(dt,[p,e]);
+                Parallel.Invoke(()=>{gp.Update();p.Update(dt,[e,e2]);},()=>{ge1.Update();e.Update(dt,[p,e2]);},()=>{ge2.Update();e2.Update(dt,[p,e]);});
             }
             Raylib.EndDrawing();
         }

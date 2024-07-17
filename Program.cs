@@ -1,6 +1,7 @@
 ﻿//  Program.cs
 using Raylib_cs;
 using System.Numerics;
+using UI;
 public class EsField
 {
     Func<float, float, float> fx;
@@ -388,7 +389,6 @@ public interface Win
 {
     public void Draw(Win_Mng win);
 }
-
 class EngineWindow : Win
 {
     public record Settings(float SimPrecision, int V_Density);
@@ -443,13 +443,13 @@ class EngineWindow : Win
         Raylib.BeginDrawing();
         Raylib.ClearBackground(Color.Black);
         Raylib.SetMouseCursor(MouseCursor.Crosshair);
-        
+
         EsField esField = new(
         (x, y) => { return p.charge * (x - p.pos.X) / MathF.Pow(MathF.Sqrt((x - p.pos.X) * (x - p.pos.X) + (y - p.pos.Y) * (y - p.pos.Y)), 3) + e.charge * (x - e.pos.X) / MathF.Pow(MathF.Sqrt((x - e.pos.X) * (x - e.pos.X) + (y - e.pos.Y) * (y - e.pos.Y)), 3) + e2.charge * (x - e2.pos.X) / MathF.Pow(MathF.Sqrt((x - e2.pos.X) * (x - e2.pos.X) + (y - e2.pos.Y) * (y - e2.pos.Y)), 3); },
         (x, y) => { return p.charge * (y - p.pos.Y) / MathF.Pow(MathF.Sqrt((x - p.pos.X) * (x - p.pos.X) + (y - p.pos.Y) * (y - p.pos.Y)), 3) + e2.charge * (y - e2.pos.Y) / MathF.Pow(MathF.Sqrt((x - e2.pos.X) * (x - e2.pos.X) + (y - e2.pos.Y) * (y - e2.pos.Y)), 3) + e.charge * (y - e.pos.Y) / MathF.Pow(MathF.Sqrt((x - e.pos.X) * (x - e.pos.X) + (y - e.pos.Y) * (y - e.pos.Y)), 3); },
         [15, Raylib.GetScreenWidth()], [15, Raylib.GetScreenHeight()], presets[seer.P_index].V_Density);
         esField.draw(new Color(215, 55, 255, 240));
-        
+
         ctr.Control();
         p.Draw(active);
         e.Draw(active);
@@ -462,111 +462,31 @@ class EngineWindow : Win
         Raylib.EndDrawing();
     }
 }
-class Button
-{
-    public Color bg;
-    public Color fg;
-    public Vector2 pos;
-    public Vector2 dim;
-    public string text;
-    public bool toggled;
-    public Button(Vector2 pos, Vector2 dim, string Text, Color fg, Color bg)
-    {
-        this.pos = pos;
-        this.dim = dim;
-        this.text = Text;
-        this.fg = fg;
-        this.bg = bg;
-    }
-    public void Update(Vector2 pos,Vector2 dim){
-        this.pos = pos;
-        this.dim = dim;
-    }
-    public bool IsHover()
-    {
-        Vector2 mpos = Raylib.GetMousePosition();
-        if ((mpos - pos).Y > 0 && (mpos - pos).X > 0 && (mpos - pos).X < dim.X && (mpos - pos).Y < dim.Y)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    public bool IsClick()
-    {
-        if (this.IsHover() && Raylib.IsMouseButtonPressed(MouseButton.Left))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    public bool Selected()
-    {
-        if (IsClick() && toggled)
-        {
-            toggled = false;
-        }
-        if (IsClick() && !toggled)
-        {
-            toggled = true;
-        }
-        return toggled;
-    }
-    public void Draw()
-    {
-        if (this.IsHover())
-            Raylib.DrawRectangleRoundedLines(
-                new Rectangle(pos, dim), 0.5f, 54, 4, fg
-            );
-        if (this.Selected())
-        {
-            Raylib.DrawRectangleRounded(
-                new Rectangle(pos, dim),
-                    0.5f, 54,Raylib.ColorTint(bg,Color.Red)
-            );
-        }
-        else
-        {
-            Raylib.DrawRectangleRounded(
-                new Rectangle(pos, dim),
-                    0.5f, 54, bg
-            );
-        }
-        
-        Raylib.DrawText(text, (int)(pos.X+20), (int)(pos.Y + dim.Y / 4), 24, fg);
-    }
-}
-public class StartWin : Win
-{
-    Button pre1,pre2,pre3;
+public class StartWin : Win{
+    Button pre1, pre2, pre3;
     public StartWin()
     {
         pre1 = new(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 - 50), new(250, 50), "HIGH", Color.White, Color.Blue);
         pre2 = new(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 + 5), new(250, 50), "MEDIUM", Color.White, Color.Blue);
         pre3 = new(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 + 60), new(250, 50), "LOW", Color.White, Color.Blue);
-        
+
     }
     public void Draw(Win_Mng seer)
     {
         Raylib.BeginDrawing();
         Raylib.ClearBackground(Color.Black);
-        Raylib.DrawCircleGradient(0, 0, Raylib.GetScreenWidth() + Raylib.GetScreenHeight() / 2, Color.DarkGreen, Color.DarkPurple);
+        Raylib.DrawCircleGradient(0, 0, Raylib.GetScreenWidth() + Raylib.GetScreenHeight() / 2, Color.SkyBlue, Color.Magenta);
         Raylib.DrawRectangleRounded(
                 new Rectangle(50, 50, Raylib.GetScreenWidth() - 100, Raylib.GetScreenHeight() - 100),
-                    0.075f, 100, Raylib.ColorFromNormalized(new(1f, 1f, 1f, 0.65f))
+                    0.075f, 100, Raylib.ColorFromNormalized(new(0f, 0f, 0f, 0.55f))
             );
-        Raylib.DrawText("Electro static Simulator", Raylib.GetScreenWidth() / 2 - 300, Raylib.GetScreenHeight() / 2 - 250, 54, Color.Magenta);
-        Button start = new(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 - 150), new(250, 50), "Start", Color.White, Color.Blue);
+        Raylib.DrawText("Electro static Simulator", Raylib.GetScreenWidth() / 2 - 300, Raylib.GetScreenHeight() / 2 - 250, 54, Color.RayWhite);
+        Button start = new(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 - 160), new(250, 50), "Start", Color.White, Color.Blue);
         start.Draw();
-        pre1.Update(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 - 50), new(250, 50));
-        pre2.Update(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 + 5), new(250, 50));
-        pre3.Update(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 + 60), new(250, 50));
-        Raylib.DrawText("Quality Presets :", Raylib.GetScreenWidth() / 2 - 250, Raylib.GetScreenHeight() / 2 - 100, 46, Color.Magenta);
+        pre1.Update(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 - 30), new(250, 50));
+        pre2.Update(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 + 35), new(250, 50));
+        pre3.Update(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 + 100), new(250, 50));
+        Raylib.DrawText("Quality Presets :", Raylib.GetScreenWidth() / 2 - 250, Raylib.GetScreenHeight() / 2 - 100, 46, Color.RayWhite);
         pre1.Draw();
         pre2.Draw();
         pre3.Draw();
@@ -606,12 +526,9 @@ public class Win_Mng(Win[] obj)
         wins[C_index].Draw(this);
     }
 }
-
-partial class Program
-{
+partial class Program{
     public static void Main()
     {
-        Raylib.SetTargetFPS(160);
         Raylib.SetConfigFlags(ConfigFlags.Msaa4xHint | ConfigFlags.ResizableWindow | ConfigFlags.MaximizedWindow);
         Raylib.InitWindow(1000, 680, "Es force sim");// math 1000x680
         StartWin Main = new();

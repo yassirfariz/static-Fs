@@ -291,7 +291,7 @@ class Graph
             }
             else
             {
-                factor = val_accs.Max() + 0.25f;
+                factor = val_accs.Max() + 0.025f;
                 for (int i = 1; i < val_accs.Count; i++)
                 {
                     Raylib.DrawLineEx(
@@ -391,13 +391,12 @@ public interface Win
 }
 class EngineWindow : Win
 {
-    public record Settings(float SimPrecision, int V_Density);
+    public record Settings(int V_Density);
     public Particle p, e, e2;
     public Controller ctr;
     public Graph gp, ge1, ge2;
     public bool active;
     public HelpMenu menu;
-    public static List<Settings> presets = [new Settings(90, 35), new Settings(90, 55), new Settings(90, 85)];
     public EngineWindow()
     {
         p = new(new Vector2(500, 340), new Vector2(0, 0), new Vector2(0, 0), 20);
@@ -412,7 +411,7 @@ class EngineWindow : Win
     }
     public void Draw(Win_Mng seer)
     {
-        float dt = presets[seer.P_index].SimPrecision * Raylib.GetFrameTime();
+        float dt = 90 * Raylib.GetFrameTime();
         if (Raylib.IsKeyPressed(KeyboardKey.Space))
         {
             active = !active;
@@ -447,7 +446,7 @@ class EngineWindow : Win
         EsField esField = new(
         (x, y) => { return p.charge * (x - p.pos.X) / MathF.Pow(MathF.Sqrt((x - p.pos.X) * (x - p.pos.X) + (y - p.pos.Y) * (y - p.pos.Y)), 3) + e.charge * (x - e.pos.X) / MathF.Pow(MathF.Sqrt((x - e.pos.X) * (x - e.pos.X) + (y - e.pos.Y) * (y - e.pos.Y)), 3) + e2.charge * (x - e2.pos.X) / MathF.Pow(MathF.Sqrt((x - e2.pos.X) * (x - e2.pos.X) + (y - e2.pos.Y) * (y - e2.pos.Y)), 3); },
         (x, y) => { return p.charge * (y - p.pos.Y) / MathF.Pow(MathF.Sqrt((x - p.pos.X) * (x - p.pos.X) + (y - p.pos.Y) * (y - p.pos.Y)), 3) + e2.charge * (y - e2.pos.Y) / MathF.Pow(MathF.Sqrt((x - e2.pos.X) * (x - e2.pos.X) + (y - e2.pos.Y) * (y - e2.pos.Y)), 3) + e.charge * (y - e.pos.Y) / MathF.Pow(MathF.Sqrt((x - e.pos.X) * (x - e.pos.X) + (y - e.pos.Y) * (y - e.pos.Y)), 3); },
-        [15, Raylib.GetScreenWidth()], [15, Raylib.GetScreenHeight()], presets[seer.P_index].V_Density);
+        [15, Raylib.GetScreenWidth()], [15, Raylib.GetScreenHeight()], seer.P_index);
         esField.draw(new Color(215, 55, 255, 240));
 
         ctr.Control();
@@ -463,13 +462,12 @@ class EngineWindow : Win
     }
 }
 public class StartWin : Win{
-    Button pre1, pre2, pre3;
+    Button start;
+    Slider sld;
     public StartWin()
     {
-        pre1 = new(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 - 50), new(250, 50), "HIGH", Color.White, Color.Blue);
-        pre2 = new(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 + 5), new(250, 50), "MEDIUM", Color.White, Color.Blue);
-        pre3 = new(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 + 60), new(250, 50), "LOW", Color.White, Color.Blue);
-
+        start = new(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 - 160), new(250, 50), "Start", Color.White, Color.Blue);
+        sld = new(new(Raylib.GetScreenWidth() / 2 - 150, Raylib.GetScreenHeight() / 2 ),new(25,100),300,150);
     }
     public void Draw(Win_Mng seer)
     {
@@ -481,38 +479,16 @@ public class StartWin : Win{
                     0.075f, 100, Raylib.ColorFromNormalized(new(0f, 0f, 0f, 0.55f))
             );
         Raylib.DrawText("Electro static Simulator", Raylib.GetScreenWidth() / 2 - 300, Raylib.GetScreenHeight() / 2 - 250, 54, Color.RayWhite);
-        Button start = new(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 - 160), new(250, 50), "Start", Color.White, Color.Blue);
-        start.Draw();
-        pre1.Update(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 - 30), new(250, 50));
-        pre2.Update(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 + 35), new(250, 50));
-        pre3.Update(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 + 100), new(250, 50));
-        Raylib.DrawText("Quality Presets :", Raylib.GetScreenWidth() / 2 - 250, Raylib.GetScreenHeight() / 2 - 100, 46, Color.RayWhite);
-        pre1.Draw();
-        pre2.Draw();
-        pre3.Draw();
-        if (pre1.IsClick())
-        {
-            seer.P_index = 0;
-            pre2.toggled = false;
-            pre3.toggled = false;
-        }
-        if (pre2.IsClick())
-        {
-            seer.P_index = 1;
-            pre1.toggled = false;
-            pre3.toggled = false;
-        }
-        if (pre3.IsClick())
-        {
-            seer.P_index = 2;
-            pre2.toggled = false;
-            pre1.toggled = false;
-        }
-        if (start.IsClick())
-        {
+        start.Draw(true);
+        sld.Update();
+        Raylib.DrawText("Vector Field Spacing :", Raylib.GetScreenWidth() / 2 - 250, Raylib.GetScreenHeight() / 2 - 100, 46, Color.RayWhite);
+        sld.Draw(Color.Blue,Color.RayWhite);
+        Raylib.EndDrawing();
+        if (start.IsClick()){
             seer.C_index = 1;
         }
-        Raylib.EndDrawing();
+        seer.P_index = (int)sld.Value();
+        
     }
 }
 public class Win_Mng(Win[] obj)
@@ -526,6 +502,34 @@ public class Win_Mng(Win[] obj)
         wins[C_index].Draw(this);
     }
 }
+// this is a playground for testing UI feature 17/07/2024
+public class  TestUiWin :Win{
+    readonly Slider sl,dl;
+    readonly Button btn; 
+    float num;
+    public TestUiWin(){
+        sl = new Slider(new(400,300),new(0,30),200,10);
+        dl = new Slider(new(400,600),new(0,10),200,25);
+        btn = new Button(new Vector2(400,100),new(125,55),"APPLY",Color.Blue,Color.Green);
+    }
+    public void Draw(Win_Mng seer){
+        Raylib.BeginDrawing();
+        Raylib.ClearBackground(Color.Black);
+        Raylib.DrawFPS(10,10);
+        sl.Update();
+        sl.Draw(Color.Beige,Color.Gold);
+        dl.Update();
+        dl.Draw(Color.Beige,Color.Gold);
+        btn.Draw(false);
+        if (btn.IsClick()){
+            num = sl.Value()+dl.Value();
+        }
+        Raylib.DrawText($"{num}",200,200,32,Color.Beige);
+        Raylib.EndDrawing();
+    }
+}
+
+
 partial class Program{
     public static void Main()
     {
@@ -533,7 +537,8 @@ partial class Program{
         Raylib.InitWindow(1000, 680, "Es force sim");// math 1000x680
         StartWin Main = new();
         EngineWindow Engine = new();
-        Win_Mng seer = new([Main, Engine]);
+        TestUiWin WN = new ();
+        Win_Mng seer = new([Main,Engine]);
         while (!Raylib.WindowShouldClose())
         {
             seer.Draw();

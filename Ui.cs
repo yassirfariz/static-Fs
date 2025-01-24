@@ -2,23 +2,16 @@ using System.Numerics;
 using Raylib_cs;
 namespace UI
 {
-    class Button
+    class Button(Vector2 pos, Vector2 dim, string Text, Color fg, Color bg)
     {
-        public Color bg;
-        public Color fg;
-        public Vector2 pos;
-        public Vector2 dim;
-        public string text;
+        public Color bg = bg;
+        public Color fg = fg;
+        public Vector2 pos = pos;
+        public Vector2 dim = dim;
+        public string text = Text;
         public bool toggled;
         float i; float j;
-        public Button(Vector2 pos, Vector2 dim, string Text, Color fg, Color bg)
-        {
-            this.pos = pos;
-            this.dim = dim;
-            this.text = Text;
-            this.fg = fg;
-            this.bg = bg;
-        }
+
         public void Update(Vector2 pos, Vector2 dim)
         {
             this.pos = pos;
@@ -172,4 +165,23 @@ namespace UI
         }
         
     }
+    class CheckBox(Vector2 pos,Vector2 dim,bool Checked){
+        Vector2 pos = pos;
+        Vector2 dim = dim;
+        bool Checked = Checked;
+        public void Draw(Color bg,Color fg){
+            if (Checked){
+                Raylib.DrawRectangleRoundedLines(
+                    new Rectangle(pos, dim), 0.5f, 54, 4, fg
+                );
+            }else{
+                Raylib.DrawRectangleRoundedLines(
+                    new Rectangle(pos, dim), 0.5f, 54, 4, fg
+                );
+            }
+        } 
+
+        
+    }
 }
+

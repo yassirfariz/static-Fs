@@ -211,6 +211,7 @@ class Controller
             if (currentId < 0)
             {
                 currentId *= -1;
+                currentId += 1;
             }
             currentId %= particles.Count;
         }
@@ -391,7 +392,7 @@ public interface Win
 }
 class EngineWindow : Win
 {
-    public record Settings(int V_Density);
+    public record Settings(bool Msaa4x,int V_Density);
     public Particle p, e, e2;
     public Controller ctr;
     public Graph gp, ge1, ge2;
@@ -448,7 +449,6 @@ class EngineWindow : Win
         (x, y) => { return p.charge * (y - p.pos.Y) / MathF.Pow(MathF.Sqrt((x - p.pos.X) * (x - p.pos.X) + (y - p.pos.Y) * (y - p.pos.Y)), 3) + e2.charge * (y - e2.pos.Y) / MathF.Pow(MathF.Sqrt((x - e2.pos.X) * (x - e2.pos.X) + (y - e2.pos.Y) * (y - e2.pos.Y)), 3) + e.charge * (y - e.pos.Y) / MathF.Pow(MathF.Sqrt((x - e.pos.X) * (x - e.pos.X) + (y - e.pos.Y) * (y - e.pos.Y)), 3); },
         [15, Raylib.GetScreenWidth()], [15, Raylib.GetScreenHeight()], seer.P_index);
         esField.draw(new Color(215, 55, 255, 240));
-
         ctr.Control();
         p.Draw(active);
         e.Draw(active);
@@ -462,11 +462,12 @@ class EngineWindow : Win
     }
 }
 public class StartWin : Win{
-    Button start;
+    Button start,msaa4x;
     Slider sld;
     public StartWin()
     {
         start = new(new(Raylib.GetScreenWidth() / 2 - 100, Raylib.GetScreenHeight() / 2 - 160), new(250, 50), "Start", Color.White, Color.Blue);
+        msaa4x = new(new(Raylib.GetScreenWidth() / 2 - 25, Raylib.GetScreenHeight() / 2 + 80), new(50, 50), " ", Color.White, Color.Blue);
         sld = new(new(Raylib.GetScreenWidth() / 2 - 150, Raylib.GetScreenHeight() / 2 ),new(25,100),300,150);
     }
     public void Draw(Win_Mng seer)
@@ -479,13 +480,17 @@ public class StartWin : Win{
                     0.075f, 100, Raylib.ColorFromNormalized(new(0f, 0f, 0f, 0.55f))
             );
         Raylib.DrawText("Electro static Simulator", Raylib.GetScreenWidth() / 2 - 300, Raylib.GetScreenHeight() / 2 - 250, 54, Color.RayWhite);
-        start.Draw(true);
+        start.Draw(false);
+        msaa4x.Draw(true);
         sld.Update();
         Raylib.DrawText("Vector Field Spacing :", Raylib.GetScreenWidth() / 2 - 250, Raylib.GetScreenHeight() / 2 - 100, 46, Color.RayWhite);
         sld.Draw(Color.Blue,Color.RayWhite);
         Raylib.EndDrawing();
         if (start.IsClick()){
             seer.C_index = 1;
+        }
+        if (msaa4x.IsClick() && msaa4x.Selected()){
+            msaa4x.toggled =false;
         }
         seer.P_index = (int)sld.Value();
         
@@ -495,6 +500,7 @@ public class Win_Mng(Win[] obj)
 {
     public int C_index = 0;
     public int P_index = 0;
+    public bool MSAA4X = false;
     public Win[] wins = obj;
 
     public void Draw()
@@ -504,32 +510,20 @@ public class Win_Mng(Win[] obj)
 }
 // this is a playground for testing UI feature 17/07/2024
 public class  TestUiWin :Win{
-    readonly Slider sl,dl;
-    readonly Button btn; 
-    float num;
+    readonly Button btn;
+    readonly CheckBox chb; 
     public TestUiWin(){
-        sl = new Slider(new(400,300),new(0,30),200,10);
-        dl = new Slider(new(400,600),new(0,10),200,25);
         btn = new Button(new Vector2(400,100),new(125,55),"APPLY",Color.Blue,Color.Green);
+        chb = new CheckBox(new(),new(),false);
     }
     public void Draw(Win_Mng seer){
         Raylib.BeginDrawing();
         Raylib.ClearBackground(Color.Black);
         Raylib.DrawFPS(10,10);
-        sl.Update();
-        sl.Draw(Color.Beige,Color.Gold);
-        dl.Update();
-        dl.Draw(Color.Beige,Color.Gold);
         btn.Draw(false);
-        if (btn.IsClick()){
-            num = sl.Value()+dl.Value();
-        }
-        Raylib.DrawText($"{num}",200,200,32,Color.Beige);
         Raylib.EndDrawing();
     }
 }
-
-
 partial class Program{
     public static void Main()
     {
@@ -537,7 +531,6 @@ partial class Program{
         Raylib.InitWindow(1000, 680, "Es force sim");// math 1000x680
         StartWin Main = new();
         EngineWindow Engine = new();
-        TestUiWin WN = new ();
         Win_Mng seer = new([Main,Engine]);
         while (!Raylib.WindowShouldClose())
         {
